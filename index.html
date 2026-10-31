@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GPG Mobile Master 2026</title>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 12px;
+            font-size: 14px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 18px;
+            color: #004080;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card title {
+            font-weight: bold;
+            color: #004080;
+            margin-bottom: 8px;
+            display: block;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #555;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background: #fff;
+        }
+        textarea {
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .btn {
+            background-color: #004080;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .btn-red {
+            background-color: #d9534f;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .kpi-box {
+            background: #eef2f7;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .kpi-val {
+            font-size: 16px;
+            font-weight: bold;
+            color: #004080;
+            margin-top: 2px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🛡️ GPG Master Mobile 2026</h1>
+
+    <!-- Configurazione Contratto -->
+    <div class="card">
+        <span style="font-weight:bold; color:#004080;">⚙️ Contratto CCNL GPG 2026</span>
+        <label>Livello GPG:</label>
+        <select id="livelloSelect" onchange="salvaECalcola()">
+            <option value="1">1° Livello (1.992,60 €)</option>
+            <option value="2">2° Livello (1.860,38 €)</option>
+            <option value="3" selected>3° Livello GPG Base (1.651,31 €)</option>
+            <option value="4">4° Livello GPG (1.468,88 €)</option>
+            <option value="5">5° Livello GPG (1.393,87 €)</option>
+            <option value="6">6° Livello GPG (1.293,87 €)</option>
+        </select>
+
+        <label>Indennità Extra / Scatti (€):</label>
+        <input type="number" id="indennitaExtra" value="0" step="0.01" oninput="salvaECalcola()">
+
+        <div style="margin-top: 8px;">
+            <label><input type="checkbox" id="portoArmi" checked onchange="salvaECalcola()" style="width:auto; margin-right:6px;"> Indennità Porto d'Armi (+85€)</label>
+        </div>
+
+        <label>Paga Oraria Calcolata (Divisore 173):</label>
+        <input type="text" id="pagaOrariaDisp" readonly style="background:#eef2f7; font-weight:bold;">
+    </div>
+
+    <!-- Inserimento Turni / IA -->
+    <div class="card">
+        <span style="font-weight:bold; color:#004080;">🤖 Incolla / Analizza Turni</span>
+        <label>Incolla qui il foglio turni (es. orari con virgola, ferie, permessi, festivi):</label>
+        <textarea id="testoInput" rows="4" placeholder="Incolla qui..."></textarea>
+
+        <button class="btn" onclick="caricaEsempio()">Carica Brogliaccio Test</button>
+        <button class="btn" onclick="analizzaEIncolla()" style="background-color: #008000;">⚡ Analizza & Salva</button>
+    </div>
+
+    <!-- Dashboard KPI -->
+    <div class="kpi-grid">
+        <div class="kpi-box">
+            <div style="font-size:11px; color:#555;">STIPENDIO LORDO</div>
+            <div class="kpi-val" id="kpiLordo" style="color:#008000;">0.00 €</div>
+        </div>
+        <div class="kpi-box">
+            <div style="font-size:11px; color:#555;">NETTO IN TASCA</div>
+            <div class="kpi-val" id="kpiNetto">0.00 €</div>
+        </div>
+        <div class="kpi-box">
+            <div style="font-size:11px; color:#555;">ORE TOTALI</div>
+            <div class="kpi-val" id="kpiOre">0.00 h</div>
+        </div>
+        <div class="kpi-box">
+            <div style="font-size:11px; color:#555;">ORE NOTTURNE</div>
+            <div class="kpi-val" id="kpiNotte" style="color:#8b0000;">0.00 h</div>
+        </div>
+    </div>
+
+    <!-- Tabella Turni -->
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:bold; color:#004080;">📋 Registro Turni</span>
+            <button class="btn btn-red" style="width:auto; padding:6px 12px; font-size:11px; margin:0;" onclick="svuotaDatabase()">Svuota</button>
+        </div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Orario</th>
+                        <th>Ore</th>
+                        <th>Notte</th>
+                        <th>Fest</th>
+                        <th>Az.</th>
+                    </tr>
+                </thead>
+                <tbody id="tabellaTurni"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const TABELLARI_2026 = { "1": 1992.60, "2": 1860.38, "3": 1651.31, "4": 1468.88, "5": 1393.87, "6": 1293.87 };
+    const DIVISORE = 173;
+    const ORE_FERIE = 7.15;
+
+    let turniDB = JSON.parse(localStorage.getItem('gpg_mobile_2026_db')) || [];
+
+    const esempioBrogliaccio =
+`30/10/26 8,30 12,30 VIGILANZA PRESIDIO FISSO
+30/10/26 12,30 15,30 PERMESSI GODUTI
+31/10/26 FERIE
+01/11/26 23,00 5,00 PATTUGLIAMENTO (Festivo)
+02/11/26 23,00 5,00 PATTUGLIAMENTO AUTO
+03/11/26 TURNO DI RIPOSO
+04/11/26 8,00 12,00 PIANTONAMENTO SPOT
+04/11/26 12,00 15,00 PERMESSI GODUTI`;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        let savedCfg = JSON.parse(localStorage.getItem('gpg_mobile_2026_cfg'));
+        if (savedCfg) {
+            document.getElementById('livelloSelect').value = savedCfg.livello;
+            document.getElementById('indennitaExtra').value = savedCfg.indennita;
+            document.getElementById('portoArmi').checked = savedCfg.portoArmi;
+        }
+        document.getElementById('testoInput').value = esempioBrogliaccio;
+        salvaECalcola();
+    });
+
+    function caricaEsempio() {
+        document.getElementById('testoInput').value = esempioBrogliaccio;
+        analizzaEIncolla();
+    }
+
+    function salvaECalcola() {
+        const livello = document.getElementById('livelloSelect').value;
+        const indennita = parseFloat(document.getElementById('indennitaExtra').value) || 0;
+        const portoArmi = document.getElementById('portoArmi').checked ? 85.0 : 0.0;
+
+        localStorage.setItem('gpg_mobile_2026_cfg', JSON.stringify({ livello, indennita, portoArmi }));
+
+        const minimo = TABELLARI_2026[livello] || 1651.31;
+        const fissoMensile = minimo + indennita + portoArmi;
+        const pagaOraria = fissoMensile / DIVISORE;
+
+        document.getElementById('pagaOrariaDisp').value = pagaOraria.toFixed(2) + ' €/h';
+        aggiornaDashboard(fissoMensile, pagaOraria);
+    }
+
+    function analizzaEIncolla() {
+        const testo = document.getElementById('testoInput').value;
+        if (!testo.trim()) return;
+
+        turniDB = [];
+        const righe = testo.split('\n');
+
+        righe.forEach((riga, index) => {
+            riga = riga.trim();
+            if (!riga) return;
+
+            const matchData = riga.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/);
+            if (!matchData) return;
+
+            let gg = matchData[1].padStart(2, '0');
+            let mm = matchData[2].padStart(2, '0');
+            let aa = matchData[3].length === 2 ? '20' + matchData[3] : matchData[3];
+            let dataFormattata = `${gg}/${mm}/${aa}`;
+
+            const rigaLower = riga.toLowerCase();
+            let tipo = 'Lavoro';
+            if (rigaLower.includes('ferie')) tipo = 'Ferie';
+            else if (rigaLower.includes('permess')) tipo = 'Permesso';
+            else if (rigaLower.includes('riposo')) tipo = 'Riposo';
+
+            let oraInizio = '';
+            let oraFine = '';
+            let oreTotali = 0;
+            let oreNotturne = 0;
+            let isFestivo = rigaLower.includes('festivo') || rigaLower.includes('dom');
+
+            if (tipo === 'Lavoro' || tipo === 'Permesso') {
+                const orariMatch = riga.match(/(\d{1,2})[:.,](\d{2})\s+(\d{1,2})[:.,](\d{2})/);
+                if (orariMatch) {
+                    let h1 = parseInt(orariMatch[1]);
+                    let m1 = parseInt(orariMatch[2]);
+                    let h2 = parseInt(orariMatch[3]);
+                    let m2 = parseInt(orariMatch[4]);
+
+                    oraInizio = `${h1.toString().padStart(2, '0')}:${m1.toString().padStart(2, '0')}`;
+                    oraFine = `${h2.toString().padStart(2, '0')}:${m2.toString().padStart(2, '0')}`;
+
+                    let minInizio = h1 * 60 + m1;
+                    let minFine = h2 * 60 + m2;
+                    if (minFine <= minInizio) minFine += 24 * 60;
+
+                    oreTotali = (minFine - minInizio) / 60;
+
+                    let t = minInizio;
+                    let nottiMin = 0;
+                    while (t < minFine) {
+                        let oraGiorno = (Math.floor(t / 60)) % 24;
+                        if (oraGiorno >= 22 || oraGiorno < 6) nottiMin += 15;
+                        t += 15;
+                    }
+                    oreNotturne = nottiMin / 60;
+                } else if (tipo === 'Permesso') {
+                    oreTotali = 3.0;
+                }
+            } else if (tipo === 'Ferie') {
+                oreTotali = ORE_FERIE;
+            }
+
+            turniDB.push({
+                id: Date.now() + index,
+                data: dataFormattata,
+                tipo: tipo,
+                orario: oraInizio ? `${oraInizio}-${oraFine}` : '-',
+                oreTotali: parseFloat(oreTotali.toFixed(2)),
+                oreNotturne: parseFloat(oreNotturne.toFixed(2)),
+                isFestivo: isFestivo,
+                desc: riga
+            });
+        });
+
+        localStorage.setItem('gpg_mobile_2026_db', JSON.stringify(turniDB));
+        salvaECalcola();
+        alert("Turni analizzati e salvati sul telefono!");
+    }
+
+    function aggiornaDashboard(fissoMensile, pagaOraria) {
+        const tbody = document.getElementById('tabellaTurni');
+        tbody.innerHTML = '';
+
+        let totOre = 0;
+        let totNotte = 0;
+        let totMaggiorazioni = 0;
+
+        turniDB.forEach((t) => {
+            let maggTurno = 0;
+            if (t.tipo === 'Lavoro' || t.tipo === 'Permesso') {
+                totOre += t.oreTotali;
+                totNotte += t.oreNotturne;
+                maggTurno += t.oreNotturne * (pagaOraria * 0.15);
+                if (t.isFestivo) maggTurno += t.oreTotali * (pagaOraria * 0.20);
+            } else if (t.tipo === 'Ferie') {
+                totOre += t.oreTotali;
+            }
+
+            totMaggiorazioni += maggTurno;
+
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>${t.data}</b></td>
+                <td>${t.tipo}</td>
+                <td>${t.orario}</td>
+                <td><b>${t.oreTotali}h</b></td>
+                <td>${t.oreNotturne > 0 ? t.oreNotturne + 'h' : '-'}</td>
+                <td>${t.isFestivo ? 'SÌ' : '-'}</td>
+                <td><button style="background:red; color:white; border:none; padding:4px 6px; border-radius:4px;" onclick="eliminaTurno(${t.id})">X</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        let straordinarioOre = Math.max(0, totOre - DIVISORE);
+        let pagaStraordinario = straordinarioOre * (pagaOraria * 1.25);
+
+        let totaleLordo = fissoMensile + totMaggiorazioni + pagaStraordinario;
+        let inps = totaleLordo * 0.0919;
+        let imponibileIrpef = totaleLordo - inps;
+        let irpefNetta = Math.max(0, ((imponibileIrpef * 12 * 0.23) / 12) - 156.0);
+        let nettoStimato = totaleLordo - inps - irpefNetta;
+
+        document.getElementById('kpiLordo').innerText = totaleLordo.toFixed(2) + ' €';
+        document.getElementById('kpiNetto').innerText = nettoStimato.toFixed(2) + ' €';
+        document.getElementById('kpiOre').innerText = totOre.toFixed(2) + ' h';
+        document.getElementById('kpiNotte').innerText = totNotte.toFixed(2) + ' h';
+    }
+
+    function eliminaTurno(id) {
+        turniDB = turniDB.filter(t => t.id !== id);
+        localStorage.setItem('gpg_mobile_2026_db', JSON.stringify(turniDB));
+        salvaECalcola();
+    }
+
+    function svuotaDatabase() {
+        if (confirm("Vuoi cancellare tutto l'archivio?")) {
+            turniDB = [];
+            localStorage.removeItem('gpg_mobile_2026_db');
+            salvaECalcola();
+        }
+    }
+</script>
+
+</body>
+</html>
